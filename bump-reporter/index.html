@@ -220,7 +220,7 @@
         if (previousAcceleration) {
             var motion = instantaneouseMotion(previousAcceleration, newAcceleration);
             var total = totalMotion(motion);
-            if (total >= 1.75) {
+            if (total >= 2) {
                 recordBump();
             }
 
