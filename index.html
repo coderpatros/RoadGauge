@@ -132,9 +132,11 @@
     var maxTotal = 0;
 
     function recordBump(intensity) {
-        var bumpMarker = L.marker(userLocationMarker.getLatLng()).addTo(map);
-        recordedBumps.push(bumpMarker);
-        //TODO drop off old markers
+        if (userLocationMarker) {
+            var bumpMarker = L.marker(userLocationMarker.getLatLng()).addTo(map);
+            recordedBumps.push(bumpMarker);
+            //TODO drop off old markers
+        }
     }
 
     // this section sets up location awareness if available
