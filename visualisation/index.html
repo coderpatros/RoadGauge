@@ -66,7 +66,7 @@
     function fetchBlob() {
         if (blobList.length) {
             $.ajax({
-                url: blobList.pop(),
+                url: "https://roadgauge.blob.core.windows.net/bumps/" + blobList.pop(),
                 dataType: "json",
                 success: function(location) {
                     heatLayer.addLatLng(location);
@@ -80,8 +80,8 @@
         url: "https://roadgauge.blob.core.windows.net/bumps?restype=container&comp=list",
         dataType: "xml",
         success: function(xml) {
-            $(xml).find("Blobs Blob Url").each(function(index, url) {
-                blobList.push($(url).text());
+            $(xml).find("Blobs Blob Name").each(function(index, name) {
+                blobList.push($(name).text());
             });
         }
     });
