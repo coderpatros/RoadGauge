@@ -77,7 +77,7 @@
     }
 
     $.ajax({
-        url: "https://fixmyroad.blob.core.windows.net/bumps?restype=container&comp=list",
+        url: "https://roadgauge.blob.core.windows.net/bumps?restype=container&comp=list",
         dataType: "xml",
         success: function(xml) {
             $(xml).find("Blobs Blob Url").each(function(index, url) {
