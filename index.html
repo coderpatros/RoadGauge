@@ -1,0 +1,203 @@
+<!--
+    Copyright 2016 Patrick Dwyer
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>
+-->
+<html>
+<head>
+    <meta charset=utf-8 />
+    <title>Fix My Road</title>
+    <!-- Set the viewport for mobile devices -->
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <!-- Reference leaflet and esri leaflet for working with arcgis services-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet-src.js"></script>
+    <script src="https://unpkg.com/esri-leaflet@2.0.4"></script>
+
+    <!-- Include a font I like :) -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+
+    <!-- Include github button js -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <!-- Include jquery library -->
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin:0;
+            padding:0;
+        }
+
+        #debug {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 20px;
+            text-align: center;
+            z-index: 500;
+        }
+
+        /* Makes the map take up the whole screen */
+        #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+
+        /* This is for the GitHub fork me button */
+        #fork-me {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 20px;
+            text-align: center;
+            z-index: 500;
+        }
+
+        /* This is for the disclaimer popup */
+        #disclaimer {
+            visibility: hidden;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width:100%;
+            height:100%;
+            text-align:center;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.75);
+        }
+
+        #disclaimer div {
+            width: 300px;
+            margin: 50px auto;
+            background-color: #fff;
+            border: 1px solid #000;
+            padding: 15px;
+            text-align:center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="debug">
+</div>
+
+<!-- Div for the map, take note of the id, it's used below -->
+<div id="map"></div>
+
+<!-- Div for GitHub fork me button -->
+<!--<div id="fork-me">-->
+    <!--<a class="github-button" href="https://github.com/patros/FixMyRoad/fork" data-style="mega" aria-label="Fork me on GitHub">Fork me on GitHub</a>-->
+<!--</div>-->
+
+<!-- Disclaimer popup content -->
+<div id="disclaimer">
+    <div>
+        <strong>Fix My Road</strong>
+        <p>This is an app to automatically report road surface conditions via sensors in your device.</p>
+        <p>The data recorded is completely anonymous.</p>
+        <p>For each detected bump in the road your device will report the latitude, longitude and a measure of how big
+        the bump was.</p>
+        <p>Each recorded bump is independent of previous records, we do record your route, speed or anything like that.</p>
+        <p><button type="button" onclick='disclaimerToggle()'>Continue</button></p>
+    </div>
+</div>
+
+<script>
+    // Used to display/hide the disclaimer popup
+    function disclaimerToggle() {
+        el = document.getElementById("disclaimer");
+        el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible";
+    }
+
+    // Initialise leaflet map in the element with the id 'map', set initial position (-26.653127, 153.067969) and zoom (11)
+    var map = L.map('map').setView([ -26.653127, 153.067969 ], 15);
+    map.addLayer(L.esri.basemapLayer("Streets"));
+
+    var userLocationMarker;
+    //TODO keep track of how old the location is
+    var recordedBumps;
+    var previousAcceleration;
+    var minTotal = 0;
+    var maxTotal = 0;
+
+    function recordBump(intensity) {
+        var bumpMarker = L.marker(userLocationMarker.getLatLng()).addTo(map);
+        recordedBumps.push(bumpMarker);
+        //TODO drop off old markers
+    }
+
+    // this section sets up location awareness if available
+    if (window.navigator == undefined) {
+        alert("Sorry, your device either doesn't have a gps or won't let us use it.");
+    } else {
+        // create and update a you are here style marker, also used when a "bump" is recorded
+        navigator.geolocation.watchPosition(
+            function(pos) {
+                var newLocation = L.latLng(pos.coords.latitude, pos.coords.longitude);
+                if (!userLocationMarker) {
+                    userLocationMarker = L.marker(newLocation).addTo(map);
+                }
+                userLocationMarker.setLatLng(newLocation);
+                map.flyTo(newLocation);
+            }
+        );
+    }
+
+    if (window.DeviceMotionEvent == undefined) {
+        //No accelerometer is present. Use buttons.
+        alert("Sorry, your device either doesn't have an accelerometer or won't let us use it.");
+    }
+    else {
+        window.addEventListener("devicemotion", devicemotionHandler, true);
+    }
+
+    function instantaneouseMotion(previousAcceleration, currentAcceleration) {
+        var kFilteringFactor = 0.1;
+        return {
+            x: currentAcceleration.x - ( (currentAcceleration.x * kFilteringFactor) + (previousAcceleration.x * (1.0 - kFilteringFactor)) ),
+            y: currentAcceleration.y - ( (currentAcceleration.y * kFilteringFactor) + (previousAcceleration.y * (1.0 - kFilteringFactor)) ),
+            z: currentAcceleration.z - ( (currentAcceleration.z * kFilteringFactor) + (previousAcceleration.z * (1.0 - kFilteringFactor)) )
+        };
+    }
+
+    function totalMotion(accelerationIncludingGravity) {
+        return Math.sqrt(accelerationIncludingGravity.x^2 + accelerationIncludingGravity.y^2 + accelerationIncludingGravity.z^2) || 0;
+    }
+
+    function devicemotionHandler(event) {
+        var newAcceleration = event.accelerationIncludingGravity;
+//        var newAcceleration = totalAcceleration(event.accelerationIncludingGravity);
+
+        if (previousAcceleration) {
+            var motion = instantaneouseMotion(previousAcceleration, newAcceleration);
+            var total = totalMotion(motion);
+            if (total >= 3) {
+                recordBump(total);
+            }
+
+            // debug stuff
+            minTotal = Math.min(minTotal, total);
+            maxTotal = Math.max(maxTotal, total);
+            $("#debug").html(Math.round(motion.x) + "<br>" + Math.round(motion.y) + "<br>" + Math.round(motion.z) + "<br>" + Math.round(totalMotion(motion)) + "<br>" + Math.round(minTotal) + "<br>" + Math.round(maxTotal));
+        }
+
+        previousAcceleration = newAcceleration;
+    }
+
+    // initial display of the disclaimer
+//    disclaimerToggle();
+</script>
+
+</body>
+</html>
