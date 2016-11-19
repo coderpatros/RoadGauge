@@ -140,9 +140,15 @@
 
     function recordBump() {
         if (userLocationMarker) {
+            var today = new Date();
             $.ajax({
-                url: "https://fixmyroad.blob.core.windows.net/bumps/" + guid() + "?sv=2015-04-05&ss=b&srt=o&sp=c&se=2016-11-30T19:47:52Z&st=2016-11-19T11:47:52Z&spr=https&sig=GQjYXs77AImbMedd21Bn%2BVBvzvvPCtVA8h4HftyzJDU%3D",
+                url: "https://fixmyroad.blob.core.windows.net/bumps/" + guid() + "?sv=2015-04-05&ss=b&srt=o&sp=c&se=2016-11-30T20:23:21Z&st=2016-11-10T12:23:21Z&spr=https&sig=17ELovvbU4w3rnR1eDn73vfOTq%2BqqhWsphu64i23Haw%3D",
                 contentType: "text/plain",
+                headers: {
+                    "x-ms-date": today.toUTCString(),
+                    "x-ms-version": "2015-12-11",
+                    "x-ms-blob-type": "BlockBlob"
+                },
                 data: JSON.stringify({
                     lat: userLocationMarker.getLatLng().lat,
                     lng: userLocationMarker.getLatLng().lng
