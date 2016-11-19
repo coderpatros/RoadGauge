@@ -186,6 +186,9 @@
                 }
                 userLocationMarker.setLatLng(newLocation);
                 map.flyTo(newLocation);
+            },
+            function() {
+                alert("There was an error getting your current location.");
             }
         );
     }
