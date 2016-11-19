@@ -156,7 +156,12 @@
                 method: "PUT"
             });
 
-            var bumpMarker = L.marker(userLocationMarker.getLatLng()).addTo(map);
+            var bumpMarker = L.marker(userLocationMarker.getLatLng(), {
+                icon: L.icon({
+                    iconUrl: "bump-marker.png",
+                    iconSize: [31, 29]
+                })
+            }).addTo(map);
             recordedBumps.push(bumpMarker);
             if (recordedBumps.length > 10) recordedBumps.shift();
         }
@@ -171,7 +176,14 @@
             function(pos) {
                 var newLocation = L.latLng(pos.coords.latitude, pos.coords.longitude);
                 if (!userLocationMarker) {
-                    userLocationMarker = L.marker(newLocation).addTo(map);
+                    userLocationMarker = L.marker(newLocation, {
+                        icon: L.icon({
+                            iconUrl: "car-marker.png",
+                            iconSize: [32, 44],
+                            iconAnchor: [16, 44],
+                            popupAnchor: [0, -11]
+                        })
+                    }).addTo(map);
                 }
                 userLocationMarker.setLatLng(newLocation);
                 map.flyTo(newLocation);
@@ -206,7 +218,7 @@
         if (previousAcceleration) {
             var motion = instantaneouseMotion(previousAcceleration, newAcceleration);
             var total = totalMotion(motion);
-            if (total >= 3) {
+            if (total >= 1.5) {
                 recordBump();
             }
 
