@@ -82,11 +82,12 @@
         success: function(xml) {
             $(xml).find("Blobs Blob Name").each(function(index, name) {
                 blobList.push($(name).text());
+                if (index < 4) fetchBlob();
             });
         }
     });
 
-    window.setInterval(fetchBlob, 5000);
+    window.blobList = blobList;
 </script>
 
 </body>
