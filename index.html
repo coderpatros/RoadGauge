@@ -128,14 +128,31 @@
     //TODO keep track of how old the location is
     var recordedBumps;
     var previousAcceleration;
-    var minTotal = 0;
-    var maxTotal = 0;
+//    var minTotal = 0;
+//    var maxTotal = 0;
 
-    function recordBump(intensity) {
+    function guid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+            return v.toString(16);
+        });
+    }
+
+    function recordBump() {
         if (userLocationMarker) {
+            $.ajax({
+                url: "https://fixmyroad.blob.core.windows.net/bumps/" + guid() + "?sv=2015-04-05&ss=b&srt=o&sp=c&se=2016-11-30T19:47:52Z&st=2016-11-19T11:47:52Z&spr=https&sig=GQjYXs77AImbMedd21Bn%2BVBvzvvPCtVA8h4HftyzJDU%3D",
+                contentType: "text/plain",
+                data: JSON.stringify({
+                    lat: userLocationMarker.getLatLng().lat,
+                    lng: userLocationMarker.getLatLng().lng
+                }),
+                method: "PUT"
+            });
+
             var bumpMarker = L.marker(userLocationMarker.getLatLng()).addTo(map);
             recordedBumps.push(bumpMarker);
-            //TODO drop off old markers
+            if (recordedBumps.length > 10) recordedBumps.shift();
         }
     }
 
@@ -179,19 +196,19 @@
 
     function devicemotionHandler(event) {
         var newAcceleration = event.accelerationIncludingGravity;
-//        var newAcceleration = totalAcceleration(event.accelerationIncludingGravity);
 
         if (previousAcceleration) {
             var motion = instantaneouseMotion(previousAcceleration, newAcceleration);
             var total = totalMotion(motion);
             if (total >= 3) {
-                recordBump(total);
+                recordBump();
             }
 
             // debug stuff
-            minTotal = Math.min(minTotal, total);
-            maxTotal = Math.max(maxTotal, total);
-            $("#debug").html(Math.round(motion.x) + "<br>" + Math.round(motion.y) + "<br>" + Math.round(motion.z) + "<br>" + Math.round(totalMotion(motion)) + "<br>" + Math.round(minTotal) + "<br>" + Math.round(maxTotal));
+//            minTotal = Math.min(minTotal, total);
+//            maxTotal = Math.max(maxTotal, total);
+//            $("#debug").html(Math.round(motion.x) + "<br>" + Math.round(motion.y) + "<br>" + Math.round(motion.z) + "<br>" + Math.round(totalMotion(motion)) + "<br>" + Math.round(minTotal) + "<br>" + Math.round(maxTotal));
+            $("#debug").html(motion.toFixed(2));
         }
 
         previousAcceleration = newAcceleration;
