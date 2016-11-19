@@ -1,0 +1,93 @@
+<!--
+    Copyright 2016 Patrick Dwyer
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>
+-->
+<html>
+<head>
+    <meta charset=utf-8 />
+    <title>Fix My Road - Visualisation</title>
+    <!-- Set the viewport for mobile devices -->
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <!-- Reference leaflet and esri leaflet for working with arcgis services-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet-src.js"></script>
+    <script src="https://unpkg.com/esri-leaflet@2.0.4"></script>
+    <script src="leaflet-heat.js"></script>
+
+    <!-- Include a font I like :) -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+
+    <!-- Include github button js -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <!-- Include jquery library -->
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin:0;
+            padding:0;
+        }
+
+        /* Makes the map take up the whole screen */
+        #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+
+    </style>
+</head>
+<body>
+
+<!-- Div for the map, take note of the id, it's used below -->
+<div id="map"></div>
+
+<script>
+
+    // Initialise leaflet map in the element with the id 'map', set initial position (-26.653127, 153.067969) and zoom (11)
+    var map = L.map('map').setView([ -26.653127, 153.067969 ], 10);
+    map.addLayer(L.esri.basemapLayer("Streets"));
+
+    var heatLayer = L.heatLayer([]).addTo(map);
+
+    var blobList = [];
+
+    function fetchBlob() {
+        if (blobList.length) {
+            $.ajax({
+                url: blobList.pop(),
+                dataType: "json",
+                success: function(location) {
+                    heatLayer.addLatLng(location);
+                },
+                complete: fetchBlob
+            });
+        }
+    }
+
+    $.ajax({
+        url: "https://fixmyroad.blob.core.windows.net/bumps?restype=container&comp=list",
+        dataType: "xml",
+        success: function(xml) {
+            $(xml).find("Blobs Blob Url").each(function(index, url) {
+                blobList.push($(url).text());
+            });
+        }
+    });
+
+    window.setInterval(fetchBlob, 5000);
+</script>
+
+</body>
+</html>
