@@ -137,8 +137,11 @@
         });
     }
 
+    var hiddenMap = false;
     function recordBump() {
         if (userLocationMarker) {
+            if (hiddenMap) $("#map").show() else $("#map").hide();
+            hiddenMap = !hiddenMap;
             var today = new Date();
             $.ajax({
                 url: "https://fixmyroad.blob.core.windows.net/bumps/" + guid() + "?sv=2015-04-05&ss=b&srt=o&sp=c&se=2016-11-30T20:23:21Z&st=2016-11-10T12:23:21Z&spr=https&sig=17ELovvbU4w3rnR1eDn73vfOTq%2BqqhWsphu64i23Haw%3D",
