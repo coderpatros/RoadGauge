@@ -17,7 +17,7 @@
 <html>
 <head>
     <meta charset=utf-8 />
-    <title>Fix My Road</title>
+    <title>Road Gauge</title>
     <!-- Set the viewport for mobile devices -->
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
@@ -96,19 +96,18 @@
 <div id="map"></div>
 
 <!-- Div for GitHub fork me button -->
-<!--<div id="fork-me">-->
-    <!--<a class="github-button" href="https://github.com/patros/FixMyRoad/fork" data-style="mega" aria-label="Fork me on GitHub">Fork me on GitHub</a>-->
-<!--</div>-->
+<div id="fork-me">
+    <a class="github-button" href="https://github.com/patros/RoadGauge/fork" data-style="mega" aria-label="Fork me on GitHub">Fork me on GitHub</a>
+</div>
 
 <!-- Disclaimer popup content -->
 <div id="disclaimer">
     <div>
-        <strong>Fix My Road</strong>
-        <p>This is an app to automatically report road surface conditions via sensors in your device.</p>
+        <strong>Road Gauge</strong>
+        <p>This is an app to automatically report road surface conditions via sensors in your mobile device.</p>
         <p>The data recorded is completely anonymous.</p>
-        <p>For each detected bump in the road your device will report the latitude, longitude and a measure of how big
-        the bump was.</p>
-        <p>Each recorded bump is independent of previous records, we do record your route, speed or anything like that.</p>
+        <p>For each detected bump in the road your device will only report back the latitude and longitude.</p>
+        <p>Each recorded bump is independent of previous records, we do not record your route, speed or anything like that.</p>
         <p><button type="button" onclick='disclaimerToggle()'>Continue</button></p>
     </div>
 </div>
