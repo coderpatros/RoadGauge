@@ -140,7 +140,7 @@
     var hiddenMap = false;
     function recordBump() {
         if (userLocationMarker) {
-            if (hiddenMap) $("#map").show() else $("#map").hide();
+            if (hiddenMap) $("#map").show(); else $("#map").hide();
             hiddenMap = !hiddenMap;
             var today = new Date();
             $.ajax({
